@@ -1,11 +1,157 @@
+<!-- === FILE: index.html === -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COde Day</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Speed Typing — Code Edition</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="style.css" rel="stylesheet" />
+  <!-- Prism (syntax highlighting for snippets display) -->
+  <link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism-tomorrow.css" />
 </head>
 <body>
-    <p><strong>Hello there</strong></p>
+  <div class="container">
+    <header>
+      <div class="title">⏱️ Speed Typing: <span class="accent">Code Edition</span> <span class="badge">Web version</span></div>
+      <div class="row">
+        <button id="exportCsvBtn" class="btn ghost" title="Export leaderboard CSV">Export CSV</button>
+        <button id="resetBtn" class="btn ghost" title="Clear local leaderboard">Reset</button>
+        <a class="btn" href="#" id="howToBtn">How it works</a>
+      </div>
+    </header>
+
+    <div class="grid grid-2">
+      <!-- LEFT: GAME -->
+      <section class="card">
+        <h3 class="section-title">Setup</h3>
+        <div class="grid setup-grid">
+          <div>
+            <label>Player Name</label>
+            <input id="playerName" class="input" placeholder="Your name" autocomplete="name" />
+          </div>
+          <div>
+            <label>Mode</label>
+            <select id="mode" class="select">
+              <option value="competition" selected>Competition</option>
+              <option value="practice">Practice</option>
+              <option value="survival">Survival</option>
+            </select>
+          </div>
+          <div>
+            <label>Language</label>
+            <select id="language" class="select">
+              <option value="python" selected>Python</option>
+              <option value="javascript">JavaScript</option>
+              <option value="c">C</option>
+            </select>
+          </div>
+          <div>
+            <label>Difficulty</label>
+            <select id="difficulty" class="select">
+              <option value="easy">Easy</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row start-row">
+          <div class="flex1">
+            <label>Event Code (keeps leaderboards separate)</label>
+            <input id="eventCode" class="input" placeholder="CODEDAY" />
+          </div>
+          <button id="startBtn" class="btn primary">Start</button>
+        </div>
+
+        <div class="hud">
+          <div class="pill">Round: <strong id="roundLabel">—</strong></div>
+          <div class="pill">Timer: <strong id="timer">00.00s</strong></div>
+          <div class="pill">WPM: <strong id="wpm">0</strong></div>
+          <div class="pill">Accuracy: <strong id="accuracy">100%</strong></div>
+          <div class="pill">Mistakes: <strong id="mistakes">0</strong></div>
+          <div class="pill">Backspaces: <strong id="backs">0</strong></div>
+          <div class="pill">Score: <strong id="score">0</strong></div>
+        </div>
+
+        <div class="editor" id="editor">
+          <div class="editor-header">
+            <span id="filename">snippet.py</span>
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+          </div>
+          <pre class="codebox"><code id="snippet" class="language-python">Press Start to begin…</code></pre>
+          <textarea id="inputArea" class="input typebox" placeholder="Type the code here…" disabled></textarea>
+          <div class="footer">No pasting. Tab inserts 4 spaces. Spaces are not marked as mistakes. Switching tabs adds a small penalty.</div>
+        </div>
+
+        <div id="postGame" class="hidden results">
+          <div class="row space-b">
+            <div>
+              <div class="section-title">Results</div>
+              <div id="resultSummary" class="result-summary"></div>
+              <div id="resultBreakdown" class="result-breakdown"></div>
+            </div>
+            <div class="row gap8">
+              <button id="saveScoreBtn" class="btn primary">Save to Leaderboard</button>
+              <button id="playAgainBtn" class="btn">Play again</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT: LEADERBOARD -->
+      <aside class="card leaderboard">
+        <h3 class="section-title">Leaderboard</h3>
+        <div class="row gap8 lb-filters">
+          <select id="lbEvent" class="select" title="Event code filter"></select>
+          <select id="lbLang" class="select"></select>
+          <select id="lbDiff" class="select"></select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Score</th>
+              <th>WPM</th>
+              <th>Acc</th>
+              <th>Time</th>
+              <th>Mode</th>
+              <th>When</th>
+            </tr>
+          </thead>
+          <tbody id="lbBody"></tbody>
+        </table>
+      </aside>
+    </div>
+
+  <!-- Countdown Overlay -->
+  <div class="countdown" id="countdown">
+    <div class="bubble" id="countNum">3</div>
+  </div>
+
+  <!-- Config: toggle Firebase here (optional) -->
+  <script>
+    window.USE_FIREBASE = false; // set true to enable online leaderboard
+    window.FIREBASE_CONFIG = { apiKey:"", authDomain:"", projectId:"", storageBucket:"", messagingSenderId:"", appId:"" };
+  </script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+
+  <script src="snippets.js"></script>
+  <script src="leaderboard.js"></script>
+  <script src="script.js"></script>
+  <script src="https://unpkg.com/prismjs@1.29.0/components/prism-core.min.js"></script>
+  <script src="https://unpkg.com/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+

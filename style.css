@@ -1,7 +1,52 @@
-p{
-    font-size: large;
-    color: aqua;   
-    font-weight: bolder;
-    background-color: black;
-    align-self: center;
-}
+
+:root{ --bg:#0b0f14; --panel:#0e141b; --muted:#1a222d; --accent:#7c97ff; --accent-2:#34d399; --text:#e6edf3; --sub:#9fb3c8; --danger:#ff6b6b; --warn:#f5c451; }
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:linear-gradient(180deg,#0b0f14 0%,#0a1018 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.container{max-width:1100px;margin:0 auto;padding:24px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+.title{font-weight:800;letter-spacing:.2px;font-size:22px;display:flex;align-items:center;gap:10px}
+.accent{color:var(--accent)}
+.badge{background:linear-gradient(180deg,#111827,#0f172a);border:1px solid #1f2937;color:#a7b7cc;padding:4px 10px;border-radius:999px;font-size:12px}
+.card{background:linear-gradient(180deg,var(--panel),#0b1118);border:1px solid #141c26;border-radius:18px;padding:18px;box-shadow:0 10px 30px #00000040}
+.grid{display:grid;gap:16px}
+.grid-2{grid-template-columns:1.2fr .8fr}
+.setup-grid{grid-template-columns:repeat(4,1fr)}
+.section-title{font-size:14px;color:var(--sub);text-transform:uppercase;letter-spacing:.12em;margin:0 0 8px}
+label{display:block;color:var(--sub);font-size:13px;margin-bottom:8px}
+.input,.select{background:#0b1118;border:1px solid #1a2330;color:var(--text);padding:10px 12px;border-radius:12px;width:100%;outline:none}
+.input:focus,.select:focus{border-color:#2b3a4f;box-shadow:0 0 0 3px #7c97ff22}
+.btn{background:linear-gradient(180deg,#1b2636,#121a26);border:1px solid #263248;color:#dbe7f1;padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 20px #00000040}
+.btn.primary{background:linear-gradient(180deg,#7c97ff,#4f74ff);border:none;color:#091222}
+.btn.ghost{background:transparent;border:1px dashed #314055;color:#9fb3c8}
+.row{display:flex;gap:10px;align-items:center}
+.gap8{gap:8px}
+.space-b{justify-content:space-between}
+.flex1{flex:1}
+.editor{position:relative;background:linear-gradient(180deg,#0a0f15,#0a1018);border:1px solid #172131;border-radius:16px;padding:0 0 12px}
+.editor-header{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #172131;color:#9fb3c8;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace}
+.editor-header .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-left:6px}
+.editor-header .red{background:#ef4444}.yellow{background:#f59e0b}.green{background:#22c55e}
+.codebox{margin:0;padding:16px;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-size:14px;line-height:1.6;white-space:pre-wrap;word-break:break-word;min-height:120px}
+.typebox{margin:10px 12px 0;height:180px;resize:vertical;font-family:"JetBrains Mono",ui-monospace,Consolas,monospace}
+.hud{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0}
+.pill{background:#0b1118;border:1px solid #172131;padding:8px 12px;border-radius:999px;font-size:12px;color:#c6d6e6}
+.pill strong{color:#fff}
+.leaderboard table{width:100%;border-collapse:collapse}
+.leaderboard th,.leaderboard td{padding:10px 12px;border-bottom:1px solid #152031;text-align:left;font-size:13px}
+.leaderboard th{color:#9fb3c8;font-weight:600}
+.leaderboard tr:hover td{background:#0b1118}
+.countdown{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;z-index:50}
+.countdown .bubble{width:140px;height:140px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 30%,#7c97ff,#4f74ff);color:#081022;font-weight:800;font-size:60px;box-shadow:0 20px 60px #4f74ff50}
+.footer{opacity:.8;font-size:12px;margin-top:10px;color:#9fb3c8}
+.page-tip{margin-top:10px}
+.results{margin-top:14px}
+.result-summary{font-weight:700}
+.result-breakdown{font-size:13px;color:#9fb3c8;margin-top:4px}
+.start-row{margin-top:12px}
+
+/* Typed highlighting colors */
+span.typed{color:var(--accent-2)}
+span.error{background:linear-gradient(180deg,#250b0b,#1a0a0a);border:1px solid #3a1818;color:#ffc4c4;padding:2px 3px;border-radius:6px}
+span.target{color:#a9c1ff}
