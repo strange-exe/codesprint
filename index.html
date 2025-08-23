@@ -9,7 +9,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
   <link href="style.css" rel="stylesheet" />
-  <!-- Prism (syntax highlighting for snippets display) -->
   <link rel="stylesheet" href="https://unpkg.com/prismjs@1.29.0/themes/prism-tomorrow.css" />
 </head>
 <body>
@@ -24,7 +23,6 @@
     </header>
 
     <div class="grid grid-2">
-      <!-- LEFT: GAME -->
       <section class="card">
         <h3 class="section-title">Setup</h3>
         <div class="grid setup-grid">
@@ -101,7 +99,6 @@
         </div>
       </section>
 
-      <!-- RIGHT: LEADERBOARD -->
       <aside class="card leaderboard">
         <h3 class="section-title">Leaderboard</h3>
         <div class="row gap8 lb-filters">
@@ -127,14 +124,12 @@
       </aside>
     </div>
 
-  <!-- Countdown Overlay -->
   <div class="countdown" id="countdown">
     <div class="bubble" id="countNum">3</div>
   </div>
 
-  <!-- Config: toggle Firebase here (optional) -->
   <script>
-    window.USE_FIREBASE = true; // set true to enable online leaderboard
+    window.USE_FIREBASE = true;
     window.FIREBASE_CONFIG = { apiKey:"AIzaSyD8IAmLNBgoJk7qLIWvBD8ZkNQM4XFc1eI", authDomain:"speedtyper-25ae2.firebaseapp.com", projectId:"speedtyper-25ae2", storageBucket:"speedtyper-25ae2.firebasestorage.app", messagingSenderId:"1057224173062", appId:"1:1057224173062:web:8f0340a6774b8ca0d2c587" };
   </script>
   <script defer src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>

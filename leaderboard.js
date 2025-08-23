@@ -1,8 +1,6 @@
-/* === FILE: leaderboard.js === */
 (function () {
   const LS_KEY = 'codeTypeLeaderboardV2';
 
-  // ---------- Local storage ----------
   function saveLocal(entry) {
     const data = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
     data.push(entry);
@@ -37,20 +35,17 @@
     }
   }
 
-  // ---------- Firebase (compat) ----------
-  // Expect window.USE_FIREBASE + window.FIREBASE_CONFIG to be set in index.html
   if (window.USE_FIREBASE && window.FIREBASE_CONFIG && typeof firebase !== 'undefined') {
     try {
       if (!firebase.apps || !firebase.apps.length) {
         firebase.initializeApp(window.FIREBASE_CONFIG);
       }
-      window.db = firebase.firestore(); // expose globally for other modules
+      window.db = firebase.firestore();
     } catch (e) {
       console.warn('Firebase init failed', e);
     }
   }
 
-  // Collection name (keep consistent everywhere)
   const COLLECTION = 'typingLeaderboard';
 
   async function saveFirebase(entry) {
@@ -58,7 +53,6 @@
     return window.db.collection(COLLECTION).add(entry);
   }
 
-  // Live listener (returns unsubscribe fn)
   function listenFirebase(filters, cb) {
     if (!window.db) return () => {};
     let q = window.db.collection(COLLECTION);

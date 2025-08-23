@@ -1,11 +1,9 @@
-/* === FILE: script.js === */
 (function(){
   const $ = s=>document.querySelector(s);
   const fmtTime = s => `${s.toFixed(2)}s`;
   const now = ()=>performance.now();
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
-  // ---------- State ----------
   let state = {
     round: 0, totalRounds: 5, currentSnippet: '',
     startedAt: 0, elapsed: 0, mistakes: 0, backs: 0,
@@ -15,11 +13,9 @@
     survivalLives: 3
   };
 
-  // ---------- Elements ----------
   const inputArea = $('#inputArea');
   const snippetEl = $('#snippet');
 
-  // ---------- Typing UX / Anti-cheat ----------
   function toast(msg){
     const t=document.createElement('div');
     t.textContent=msg;
@@ -32,7 +28,6 @@
   inputArea.addEventListener('drop',e=>{e.preventDefault();});
   inputArea.addEventListener('contextmenu',e=>e.preventDefault());
 
-  // Tab inserts 4 spaces
   inputArea.addEventListener('keydown',e=>{
     if(e.key==='Tab'){
       e.preventDefault();
@@ -44,7 +39,6 @@
     }
   });
 
-  // Tab switch penalty
   document.addEventListener('visibilitychange',()=>{
     if(document.hidden && state.running){
       state.penalties += 1.5;
@@ -53,7 +47,6 @@
     }
   });
 
-  // ---------- Countdown ----------
   function runCountdown(cb){
     const overlay=$('#countdown'); const num=$('#countNum');
     overlay.style.display='flex'; let c=3; num.textContent=c;
@@ -64,7 +57,6 @@
     },700);
   }
 
-  // ---------- Game flow ----------
   function startGame(){
     state = {...state, round:0, roundsData:[], penalties:0, mistakes:0, backs:0, score:0, typed:'', elapsed:0, running:false, survivalLives:3};
     state.name = $('#playerName').value.trim()||'Player';
@@ -102,7 +94,6 @@
       `Rounds: ${state.roundsData.length} | Raw Time: ${totals.totalTime.toFixed(2)}s | Penalties: ${state.penalties.toFixed(1)}s | Mistakes: ${totals.mistakes} | Backspaces: ${totals.backs}`;
     $('#postGame').classList.remove('hidden');
 
-    // Auto-save (local + Firebase if enabled)
     await saveScore();
 
     updateLeaderboardSelectors();
@@ -118,7 +109,6 @@
     if(typed.length < state.typed.length) state.backs++;
     state.typed = typed;
 
-    // per-char compare; whitespace neutral
     let correctLen = 0; let mistakes = 0;
     for(let i=0;i<typed.length;i++){
       const tCh = target[i]; const uCh = typed[i];
@@ -128,13 +118,11 @@
     }
     state.mistakes = mistakes;
 
-    // Metrics
     const chars = typed.length; const minutes = Math.max(state.elapsed,0.01)/60;
     const wpm = (chars/5)/minutes;
     const acc = chars? (correctLen/chars)*100 : 100;
     state.wpm = wpm; state.accuracy = acc;
 
-    // Completion requires exact match
     if(typed===target){
       state.running=false;
       const roundTime = state.elapsed;
@@ -206,7 +194,6 @@
     return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
   }
 
-  // ---------- Leaderboard ----------
   function getFilters(){
     const e=$('#lbEvent').value||'ALL';
     const l=$('#lbLang').value||'ALL';
@@ -214,13 +201,11 @@
     return {e,l,d};
   }
 
-  // Keep one active Firebase subscription
   let fbUnsub = null;
 
   function renderLeaderboard(){
     const {e,l,d} = getFilters();
 
-    // Local first
     const local = LB.loadLocal();
     let all = [...local];
 
@@ -239,10 +224,8 @@
       });
     }
 
-    // Show local immediately
     renderTable(all);
 
-    // Re-subscribe for live Firebase with current filters
     if (fbUnsub) { try { fbUnsub(); } catch(_){} fbUnsub = null; }
     if (window.USE_FIREBASE && typeof LB.listenFirebase === 'function') {
       fbUnsub = LB.listenFirebase({e,l,d}, remote => {
@@ -262,7 +245,6 @@
     $('#lbDiff').innerHTML = diffs.map(x=>`<option ${x==='medium'? 'selected':''}>${x}</option>`).join('');
   }
 
-  // Save score (local + Firebase)
   async function saveScore(){
     const totals = aggregateTotals();
     const entry = {
@@ -288,11 +270,9 @@
     toast('Saved!');
   }
 
-  // Expose to window for other modules
   window.renderLeaderboard = renderLeaderboard;
   window.updateLeaderboardSelectors = updateLeaderboardSelectors;
 
-  // ---------- Event bindings ----------
   $('#startBtn').addEventListener('click', startGame);
   $('#playAgainBtn').addEventListener('click', startGame);
   $('#saveScoreBtn').addEventListener('click', saveScore);
@@ -303,16 +283,13 @@
   $('#lbDiff').addEventListener('change', renderLeaderboard);
   inputArea.addEventListener('input', onInput);
 
-  // Hotkeys
   document.addEventListener('keydown',e=>{
     if(e.key==='Enter' && e.ctrlKey){ if(!state.running) startGame(); }
   });
 
-  // ---------- Init ----------
   updateLeaderboardSelectors();
   renderLeaderboard();
 
-  // How-to
   $('#howToBtn').addEventListener('click',e=>{
     e.preventDefault();
     alert(`How it works:

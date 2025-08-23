@@ -1,4 +1,3 @@
-/* === FILE: snippets.js === */
 (function(){
   const PY_EASY = [
 `for i in range(3):
@@ -9,7 +8,12 @@ print(s == s[::-1])`,
 print(sum(nums))`,
 `def add(a,b):
     return a+b`,
+`for c in 'hi':
+    print(c)`,
+`print(len([x for x in range(10) if x%2==0]))`,
+`print(max([4,1,7,3]))`,
   ];
+
   const PY_MED = [
 `def is_prime(n):
     if n < 2: return False
@@ -23,7 +27,12 @@ print(Counter('banana'))`,
 `nums=[3,1,2]
 for x in sorted(nums):
     print(x)`,
+`def fact(n):
+    return 1 if n==0 else n*fact(n-1)`,
+`print({x:x**2 for x in range(4)})`,
+`print(list(map(str.upper, ['a','b'])))`,
   ];
+
   const PY_HARD = [
 `def fib(n, memo={}):
     if n < 2: return n
@@ -40,6 +49,10 @@ for x in sorted(nums):
         self.v,self.n=v,n
     def __repr__(self):
         return f'Node({self.v})'`,
+`def gcd(a,b):
+    return a if b==0 else gcd(b,a%b)`,
+`def quicksort(a):
+    return a if len(a)<=1 else quicksort([x for x in a[1:] if x<=a[0]])+[a[0]]+quicksort([x for x in a[1:] if x>a[0]])`,
   ];
 
   const JS_EASY = [
@@ -50,7 +63,11 @@ console.log(rev('hello'))`,
 `for(let i=0;i<3;i++){console.log(i)}`,
 `const isEven=n=>n%2===0;
 console.log(isEven(4))`,
+`console.log('hi'.toUpperCase())`,
+`console.log(Math.max(4,7,2))`,
+`console.log([1,2,3].includes(2))`,
   ];
+
   const JS_MED = [
 `function isPrime(n){
   if(n<2)return false;
@@ -63,25 +80,37 @@ console.log(freq('banana'));`,
 console.log(uniq([1,1,2,3]));`,
 `const sum=(a)=>a.reduce((x,y)=>x+y,0);
 console.log(sum([3,1,2]));`,
+`const fact=n=>n<2?1:n*fact(n-1);
+console.log(fact(5));`,
+`console.log([...Array(5)].map((_,i)=>i*i))`,
+`console.log(Object.keys({a:1,b:2}))`,
   ];
+
   const JS_HARD = [
 `const twoSum=(a,t)=>{const m=new Map();for(let i=0;i<a.length;i++){const x=a[i];if(m.has(t-x))return [m.get(t-x),i];m.set(x,i);}return null;}`,
 `const memoFib=(n,m={})=>n<2?n:(m[n]??(m[n]=memoFib(n-1,m)+memoFib(n-2,m)))`,
 `class Node{
   constructor(v,n=null){this.v=v;this.n=n;}
-  toString(){return \`Node(${"${"}this.v})\`;}
+  toString(){return \`Node(${this.v})\`;}
 }`,
+`const gcd=(a,b)=>b?gcd(b,a%b):a;`,
+`const quickSort=a=>a.length<=1?a:[...quickSort(a.filter(x=>x<a[0])),a[0],...quickSort(a.filter(x=>x>a[0]))];`,
   ];
 
   const C_EASY = [
 `#include <stdio.h>
-int main(){for(int i=0;i<3;i++) printf("%d\n",i);}`,
+int main(){for(int i=0;i<3;i++) printf("%d\\n",i);}`,
 `#include <stdio.h>
 int add(int a,int b){return a+b;}
 int main(){printf("%d",add(2,3));}`,
 `#include <stdio.h>
 int main(){int a=5;printf(a%2==0?"even":"odd");}`,
+`#include <stdio.h>
+int main(){printf("%lu",sizeof(int));}`,
+`#include <stdio.h>
+int main(){char s[]="hi";printf("%s",s);}`,
   ];
+
   const C_MED = [
 `#include <stdio.h>
 int isPrime(int n){if(n<2)return 0;for(int i=2;i*i<=n;i++) if(n%i==0) return 0;return 1;}
@@ -91,7 +120,13 @@ int main(){int a[3]={3,1,2};for(int i=0;i<3;i++) printf("%d ",a[i]);}`,
 `#include <stdio.h>
 void swap(int *a,int *b){int t=*a;*a=*b;*b=t;}
 int main(){int x=1,y=2;swap(&x,&y);printf("%d %d",x,y);}`,
+`#include <stdio.h>
+int fact(int n){return n<=1?1:n*fact(n-1);}
+int main(){printf("%d",fact(5));}`,
+`#include <stdio.h>
+int main(){for(char c='a';c<'d';c++) putchar(c);} `,
   ];
+
   const C_HARD = [
 `#include <stdio.h>
 int two_sum(int *a,int n,int t){for(int i=0;i<n;i++)for(int j=i+1;j<n;j++)if(a[i]+a[j]==t)return 1;return 0;}
@@ -99,6 +134,9 @@ int main(){int a[4]={2,7,11,15};printf("%d",two_sum(a,4,9));}`,
 `#include <stdio.h>
 int fib(int n){return n<2?n:fib(n-1)+fib(n-2);}
 int main(){printf("%d",fib(10));}`,
+`#include <stdio.h>
+int gcd(int a,int b){return b?gcd(b,a%b):a;}
+int main(){printf("%d",gcd(48,18));}`,
   ];
 
   window.SNIPPETS = {

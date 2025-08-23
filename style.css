@@ -46,7 +46,6 @@ label{display:block;color:var(--sub);font-size:13px;margin-bottom:8px}
 .result-breakdown{font-size:13px;color:#9fb3c8;margin-top:4px}
 .start-row{margin-top:12px}
 
-/* Typed highlighting colors */
 span.typed{color:var(--accent-2)}
 span.error{background:linear-gradient(180deg,#250b0b,#1a0a0a);border:1px solid #3a1818;color:#ffc4c4;padding:2px 3px;border-radius:6px}
 span.target{color:#a9c1ff}
