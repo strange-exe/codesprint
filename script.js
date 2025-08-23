@@ -5,10 +5,7 @@
   const now = ()=>performance.now();
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 
-  // Firebase (optional)
-  if(window.USE_FIREBASE){ try{ const app=firebase.initializeApp(window.FIREBASE_CONFIG); window.db=firebase.firestore(app);}catch(e){ console.warn('Firebase init failed', e);} }
-
-  // State
+  // ---------- State ----------
   let state = {
     round: 0, totalRounds: 5, currentSnippet: '',
     startedAt: 0, elapsed: 0, mistakes: 0, backs: 0,
@@ -18,14 +15,23 @@
     survivalLives: 3
   };
 
-  // Elements
+  // ---------- Elements ----------
   const inputArea = $('#inputArea');
   const snippetEl = $('#snippet');
 
-  // Anti-cheat & typing UX
+  // ---------- Typing UX / Anti-cheat ----------
+  function toast(msg){
+    const t=document.createElement('div');
+    t.textContent=msg;
+    Object.assign(t.style,{position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',background:'#101826',border:'1px solid #263248',padding:'8px 12px',borderRadius:'10px',color:'#d6e6f7',zIndex:99});
+    document.body.appendChild(t);
+    setTimeout(()=>t.remove(),1600);
+  }
+
   inputArea.addEventListener('paste',e=>{e.preventDefault(); toast('Pasting disabled');});
   inputArea.addEventListener('drop',e=>{e.preventDefault();});
   inputArea.addEventListener('contextmenu',e=>e.preventDefault());
+
   // Tab inserts 4 spaces
   inputArea.addEventListener('keydown',e=>{
     if(e.key==='Tab'){
@@ -37,19 +43,35 @@
       onInput();
     }
   });
+
   // Tab switch penalty
-  document.addEventListener('visibilitychange',()=>{ if(document.hidden && state.running){ state.penalties += 1.5; updateHUD(); toast('Tab switch penalty +1.5s'); } });
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden && state.running){
+      state.penalties += 1.5;
+      updateHUD();
+      toast('Tab switch penalty +1.5s');
+    }
+  });
 
-  function toast(msg){ const t=document.createElement('div'); t.textContent=msg; Object.assign(t.style,{position:'fixed',bottom:'20px',left:'50%',transform:'translateX(-50%)',background:'#101826',border:'1px solid #263248',padding:'8px 12px',borderRadius:'10px',color:'#d6e6f7',zIndex:99}); document.body.appendChild(t); setTimeout(()=>t.remove(),1600); }
+  // ---------- Countdown ----------
+  function runCountdown(cb){
+    const overlay=$('#countdown'); const num=$('#countNum');
+    overlay.style.display='flex'; let c=3; num.textContent=c;
+    const id=setInterval(()=>{
+      c--;
+      if(c>0){ num.textContent=c; }
+      else { clearInterval(id); overlay.style.display='none'; cb(); }
+    },700);
+  }
 
-  // Countdown
-  function runCountdown(cb){ const overlay=$('#countdown'); const num=$('#countNum'); overlay.style.display='flex'; let c=3; num.textContent=c; const id=setInterval(()=>{ c--; if(c>0){ num.textContent=c; } else { clearInterval(id); overlay.style.display='none'; cb(); } },700); }
-
-  // Game flow
+  // ---------- Game flow ----------
   function startGame(){
     state = {...state, round:0, roundsData:[], penalties:0, mistakes:0, backs:0, score:0, typed:'', elapsed:0, running:false, survivalLives:3};
     state.name = $('#playerName').value.trim()||'Player';
-    state.mode = $('#mode').value; state.language = $('#language').value; state.difficulty = $('#difficulty').value; state.event = $('#eventCode').value.trim()||'DEFAULT';
+    state.mode = $('#mode').value;
+    state.language = $('#language').value;
+    state.difficulty = $('#difficulty').value;
+    state.event = $('#eventCode').value.trim()||'DEFAULT';
     state.totalRounds = state.mode==='competition'?5: (state.mode==='practice'?1:999);
     $('#postGame').classList.add('hidden');
     nextRound();
@@ -67,16 +89,22 @@
     runCountdown(()=>{ inputArea.disabled=false; inputArea.focus(); startTimer(); });
   }
 
-  function endGame(){
+  async function endGame(){
     inputArea.disabled=true; state.running=false;
     const totals = aggregateTotals();
     const sum = totals.totalTime + state.penalties;
     const finalScore = computeScore(totals.charsTyped, sum, totals.mistakes, totals.backs, state.difficulty);
     state.score = finalScore;
 
-    $('#resultSummary').textContent = `${state.name} — Score ${finalScore.toFixed(1)} • WPM ${totals.wpm.toFixed(0)} • Acc ${totals.accuracy.toFixed(0)}% • Time ${sum.toFixed(2)}s`;
-    $('#resultBreakdown').textContent = `Rounds: ${state.roundsData.length} | Raw Time: ${totals.totalTime.toFixed(2)}s | Penalties: ${state.penalties.toFixed(1)}s | Mistakes: ${totals.mistakes} | Backspaces: ${totals.backs}`;
+    $('#resultSummary').textContent =
+      `${state.name} — Score ${finalScore.toFixed(1)} • WPM ${totals.wpm.toFixed(0)} • Acc ${totals.accuracy.toFixed(0)}% • Time ${sum.toFixed(2)}s`;
+    $('#resultBreakdown').textContent =
+      `Rounds: ${state.roundsData.length} | Raw Time: ${totals.totalTime.toFixed(2)}s | Penalties: ${state.penalties.toFixed(1)}s | Mistakes: ${totals.mistakes} | Backspaces: ${totals.backs}`;
     $('#postGame').classList.remove('hidden');
+
+    // Auto-save (local + Firebase if enabled)
+    await saveScore();
+
     updateLeaderboardSelectors();
     renderLeaderboard();
   }
@@ -85,12 +113,12 @@
   function tick(){ if(!state.running) return; state.elapsed = (now()-state.startedAt)/1000; updateHUD(); requestAnimationFrame(tick); }
 
   function onInput(){
-    if(!state.running) return; // after countdown it's true
+    if(!state.running) return;
     const target = state.currentSnippet; const typed = inputArea.value;
     if(typed.length < state.typed.length) state.backs++;
     state.typed = typed;
 
-    // per-char compare; spaces/newlines are neutral (no error visuals or penalty)
+    // per-char compare; whitespace neutral
     let correctLen = 0; let mistakes = 0;
     for(let i=0;i<typed.length;i++){
       const tCh = target[i]; const uCh = typed[i];
@@ -102,13 +130,15 @@
 
     // Metrics
     const chars = typed.length; const minutes = Math.max(state.elapsed,0.01)/60;
-    const wpm = (chars/5)/minutes; // typed chars rate (not penalizing whitespace)
+    const wpm = (chars/5)/minutes;
     const acc = chars? (correctLen/chars)*100 : 100;
     state.wpm = wpm; state.accuracy = acc;
 
-    // Completion requires exact match (keeps fairness), but Tab inserts spaces making it easier
+    // Completion requires exact match
     if(typed===target){
-      state.running=false; const roundTime = state.elapsed; const record = {round:state.round, time:roundTime, mistakes:mistakes, backs:state.backs, chars:target.length};
+      state.running=false;
+      const roundTime = state.elapsed;
+      const record = {round:state.round, time:roundTime, mistakes:mistakes, backs:state.backs, chars:target.length};
       state.roundsData.push(record);
       if(state.mode==='survival'){ if(acc<85 || mistakes>Math.ceil(target.length*0.08)) state.survivalLives--; }
       nextRound();
@@ -146,8 +176,16 @@
     return {totalTime, mistakes, backs, charsTyped:chars, wpm, accuracy};
   }
 
-  function pickSnippet(lang, diff){ const arr = (window.SNIPPETS?.[lang]?.[diff]||['// No snippets']); return arr[Math.floor(Math.random()*arr.length)]; }
-  function updateFilename(){ const map={python:'snippet.py', javascript:'snippet.js', c:'snippet.c'}; $('#filename').textContent = map[state.language]||'snippet.txt'; snippetEl.className = `language-${state.language==='javascript'?'javascript':state.language}`; }
+  function pickSnippet(lang, diff){
+    const arr = (window.SNIPPETS?.[lang]?.[diff]||['// No snippets']);
+    return arr[Math.floor(Math.random()*arr.length)];
+  }
+
+  function updateFilename(){
+    const map={python:'snippet.py', javascript:'snippet.js', c:'snippet.c'};
+    $('#filename').textContent = map[state.language]||'snippet.txt';
+    snippetEl.className = `language-${state.language==='javascript'?'javascript':state.language}`;
+  }
 
   function renderSnippet(){
     const t = state.currentSnippet, typed = state.typed; let html='';
@@ -164,24 +202,56 @@
     snippetEl.innerHTML = html || '<span style="color:#9fb3c8">…</span>';
     if(window.Prism) Prism.highlightElement(snippetEl);
   }
-  function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
-
-  // Leaderboard integration
-  function getFilters(){ const e=$('#lbEvent').value||'ALL'; const l=$('#lbLang').value||'ALL'; const d=$('#lbDiff').value||'ALL'; return {e,l,d}; }
-  async function renderLeaderboard(){
-    const local = LB.loadLocal();
-    const all = [...local];
-    if(window.USE_FIREBASE){ try{ const remote = await LB.fetchTopFirebase(getFilters()); all.push(...remote);}catch(e){ console.warn('FB fetch failed', e);} }
-    const {e,l,d} = getFilters();
-    const filtered = all.filter(x => (e==='ALL'||x.event===e) && (l==='ALL'||x.lang===l) && (d==='ALL'||x.diff===d));
-    filtered.sort((a,b)=> b.score - a.score || a.time - b.time || (a.ts - b.ts));
-    const tbody = $('#lbBody'); tbody.innerHTML='';
-    filtered.slice(0,100).forEach((x,i)=>{
-      const tr=document.createElement('tr');
-      tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(x.name)}</td><td>${x.score.toFixed(1)}</td><td>${x.wpm}</td><td>${x.acc}%</td><td>${x.time.toFixed(2)}s</td><td>${x.mode}</td><td>${new Date(x.ts).toLocaleString()}</td>`;
-      tbody.appendChild(tr);
-    });
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));
   }
+
+  // ---------- Leaderboard ----------
+  function getFilters(){
+    const e=$('#lbEvent').value||'ALL';
+    const l=$('#lbLang').value||'ALL';
+    const d=$('#lbDiff').value||'ALL';
+    return {e,l,d};
+  }
+
+  // Keep one active Firebase subscription
+  let fbUnsub = null;
+
+  function renderLeaderboard(){
+    const {e,l,d} = getFilters();
+
+    // Local first
+    const local = LB.loadLocal();
+    let all = [...local];
+
+    function renderTable(entries){
+      const filtered = entries.filter(x =>
+        (e==='ALL'||x.event===e) &&
+        (l==='ALL'||x.lang===l) &&
+        (d==='ALL'||x.diff===d)
+      );
+      filtered.sort((a,b)=> b.score - a.score || a.time - b.time || (a.ts - b.ts));
+      const tbody = $('#lbBody'); tbody.innerHTML='';
+      filtered.slice(0,100).forEach((x,i)=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(x.name)}</td><td>${x.score.toFixed(1)}</td><td>${x.wpm}</td><td>${x.acc}%</td><td>${x.time.toFixed(2)}s</td><td>${x.mode}</td><td>${new Date(x.ts).toLocaleString()}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Show local immediately
+    renderTable(all);
+
+    // Re-subscribe for live Firebase with current filters
+    if (fbUnsub) { try { fbUnsub(); } catch(_){} fbUnsub = null; }
+    if (window.USE_FIREBASE && typeof LB.listenFirebase === 'function') {
+      fbUnsub = LB.listenFirebase({e,l,d}, remote => {
+        all = [...local, ...remote];
+        renderTable(all);
+      });
+    }
+  }
+
   function updateLeaderboardSelectors(){
     const data = LB.loadLocal();
     const events = ['ALL', ...new Set(data.map(x=>x.event))];
@@ -192,20 +262,37 @@
     $('#lbDiff').innerHTML = diffs.map(x=>`<option ${x==='medium'? 'selected':''}>${x}</option>`).join('');
   }
 
-  // Save score
+  // Save score (local + Firebase)
   async function saveScore(){
     const totals = aggregateTotals();
-    const entry = { name: state.name, score: Number(state.score.toFixed(1)), wpm: Number(totals.wpm.toFixed(0)), acc: Number(totals.accuracy.toFixed(0)), time: Number((totals.totalTime + state.penalties).toFixed(2)), mistakes: totals.mistakes, backs: totals.backs, mode: state.mode, lang: state.language, diff: state.difficulty, event: state.event, ts: Date.now() };
+    const entry = {
+      name: state.name,
+      score: Number(state.score.toFixed(1)),
+      wpm: Number(totals.wpm.toFixed(0)),
+      acc: Number(totals.accuracy.toFixed(0)),
+      time: Number((totals.totalTime + state.penalties).toFixed(2)),
+      mistakes: totals.mistakes,
+      backs: totals.backs,
+      mode: state.mode,
+      lang: state.language,
+      diff: state.difficulty,
+      event: state.event,
+      ts: Date.now()
+    };
     LB.saveLocal(entry);
-    if(window.USE_FIREBASE) try{ await LB.saveFirebase(entry); }catch(e){ console.error(e); toast('Online save failed, saved locally.'); }
-    renderLeaderboard(); toast('Saved!');
+    if(window.USE_FIREBASE){
+      try { await LB.saveFirebase(entry); }
+      catch(e){ console.error(e); toast('Online save failed, saved locally.'); }
+    }
+    renderLeaderboard();
+    toast('Saved!');
   }
 
   // Expose to window for other modules
   window.renderLeaderboard = renderLeaderboard;
   window.updateLeaderboardSelectors = updateLeaderboardSelectors;
 
-  // Event bindings
+  // ---------- Event bindings ----------
   $('#startBtn').addEventListener('click', startGame);
   $('#playAgainBtn').addEventListener('click', startGame);
   $('#saveScoreBtn').addEventListener('click', saveScore);
@@ -217,20 +304,25 @@
   inputArea.addEventListener('input', onInput);
 
   // Hotkeys
-  document.addEventListener('keydown',e=>{ if(e.key==='Enter' && e.ctrlKey){ if(!state.running) startGame(); } });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Enter' && e.ctrlKey){ if(!state.running) startGame(); }
+  });
 
-  // Init
+  // ---------- Init ----------
   updateLeaderboardSelectors();
   renderLeaderboard();
 
   // How-to
-  $('#howToBtn').addEventListener('click',e=>{ e.preventDefault(); alert(`How it works:
+  $('#howToBtn').addEventListener('click',e=>{
+    e.preventDefault();
+    alert(`How it works:
 
 1) Choose mode, language, difficulty, and set an Event Code.
 2) Press Start, wait for the 3..2..1 countdown, then type the snippet exactly.
 3) Competition mode runs 5 rounds.
 4) Score = scaled WPM × Accuracy − Penalties + Difficulty bonus.
-5) Save to leaderboard. Use Event Code to group your contest.
+5) Results auto-save. Use Event Code to group your contest.
 
-Anti-cheat: Pasting is disabled. Tab switching adds a time penalty. Tab inserts 4 spaces. Spaces aren't marked as mistakes.`); });
+Anti-cheat: Pasting is disabled. Tab switching adds a time penalty. Tab inserts 4 spaces. Spaces aren't marked as mistakes.`);
+  });
 })();
