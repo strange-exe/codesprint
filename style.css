@@ -2,4 +2,6 @@ p{
     font-size: large;
     color: aqua;   
     font-weight: bolder;
+    background-color: black;
+    align-self: center;
 }
