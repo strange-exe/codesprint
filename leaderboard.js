@@ -35,13 +35,6 @@
     }
   }
 
-  if (window.USE_FIREBASE && typeof LB.listenFirebase === 'function') {
-  fbUnsub = LB.listenFirebase({e,l,d}, remote => {
-    renderTable(remote); // Only remote, not local + remote
-  });
-} else {
-  renderTable(local);
-}
 
   const COLLECTION = 'typingLeaderboard';
 
