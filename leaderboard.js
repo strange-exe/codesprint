@@ -35,16 +35,13 @@
     }
   }
 
-  if (window.USE_FIREBASE && window.FIREBASE_CONFIG && typeof firebase !== 'undefined') {
-    try {
-      if (!firebase.apps || !firebase.apps.length) {
-        firebase.initializeApp(window.FIREBASE_CONFIG);
-      }
-      window.db = firebase.firestore();
-    } catch (e) {
-      console.warn('Firebase init failed', e);
-    }
-  }
+  if (window.USE_FIREBASE && typeof LB.listenFirebase === 'function') {
+  fbUnsub = LB.listenFirebase({e,l,d}, remote => {
+    renderTable(remote); // Only remote, not local + remote
+  });
+} else {
+  renderTable(local);
+}
 
   const COLLECTION = 'typingLeaderboard';
 
