@@ -28,12 +28,25 @@
   inputArea.addEventListener('drop',e=>{e.preventDefault();});
   inputArea.addEventListener('contextmenu',e=>e.preventDefault());
 
-  inputArea.addEventListener('keydown',e=>{
-    if(e.key==='Tab'){
+  inputArea.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
       e.preventDefault();
-      const start = inputArea.selectionStart; const end = inputArea.selectionEnd;
-      const v = inputArea.value; const insert = '    ';
-      inputArea.value = v.slice(0,start) + insert + v.slice(end);
+      const start = inputArea.selectionStart, end = inputArea.selectionEnd;
+      const v = inputArea.value, insert = '    ';
+      inputArea.value = v.slice(0, start) + insert + v.slice(end);
+      inputArea.selectionStart = inputArea.selectionEnd = start + insert.length;
+      onInput();
+    } else if (e.key === 'Enter') {
+      const val = inputArea.value;
+      const start = inputArea.selectionStart;
+      const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+      const line = val.slice(lineStart, start);
+      const indentMatch = line.match(/^[ \t]*/);
+      let indent = indentMatch ? indentMatch[0] : '';
+      if (state.language === 'python' && line.trim().endsWith(':')) indent += '    ';
+      e.preventDefault();
+      const insert = '\n' + indent;
+      inputArea.value = val.slice(0, start) + insert + val.slice(start);
       inputArea.selectionStart = inputArea.selectionEnd = start + insert.length;
       onInput();
     }
@@ -301,5 +314,11 @@
 5) Results auto-save. Use Event Code to group your contest.
 
 Anti-cheat: Pasting is disabled. Tab switching adds a time penalty. Tab inserts 4 spaces. Spaces aren't marked as mistakes.`);
+  });
+
+  $('#stopBtn').addEventListener('click', () => {
+    state.running = false;
+    inputArea.disabled = true;
+    toast('Stopped!');
   });
 })();

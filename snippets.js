@@ -30,8 +30,13 @@ for x in sorted(nums):
 `def fact(n):
     return 1 if n==0 else n*fact(n-1)`,
 `print({x:x**2 for x in range(4)})`,
-`print(list(map(str.upper, ['a','b'])))`,
-  ];
+`print(list(map(str.upper, ['a','b'])))`
+`import this`,
+`print('\\n'.join(['FizzBuzz'[(i%3==0)*4:(i%5==0)*4 or 8] or str(i) for i in range(1,21)]))`,
+`def flatten(l): return [item for sublist in l for item in sublist]`,
+`def palindrome(s): return s == s[::-1]`,
+`print(*map(lambda x: x**2, range(5)))`
+];
 
   const PY_HARD = [
 `def fib(n, memo={}):
@@ -83,8 +88,13 @@ console.log(sum([3,1,2]));`,
 `const fact=n=>n<2?1:n*fact(n-1);
 console.log(fact(5));`,
 `console.log([...Array(5)].map((_,i)=>i*i))`,
-`console.log(Object.keys({a:1,b:2}))`,
-  ];
+`console.log(Object.keys({a:1,b:2}))`
+`console.log([...Array(10)].map((_,i)=>i*i));`,
+`const flatten = arr => arr.reduce((a,b)=>a.concat(b),[]);`,
+`const isPalindrome = s => s === s.split('').reverse().join('');`,
+`[...Array(20)].forEach((_,i)=>console.log(i%3?'':i%5?'':'FizzBuzz'))`,
+`console.log('🎉'.repeat(5));`
+];
 
   const JS_HARD = [
 `const twoSum=(a,t)=>{const m=new Map();for(let i=0;i<a.length;i++){const x=a[i];if(m.has(t-x))return [m.get(t-x),i];m.set(x,i);}return null;}`,
@@ -125,7 +135,15 @@ int fact(int n){return n<=1?1:n*fact(n-1);}
 int main(){printf("%d",fact(5));}`,
 `#include <stdio.h>
 int main(){for(char c='a';c<'d';c++) putchar(c);} `,
-  ];
+`#include <stdio.h>
+int main(){for(int i=1;i<=5;i++)printf("%d ",i*i);}`,
+`#include <stdio.h>
+int main(){char s[]="madam";int i=0,j=4,f=1;while(i<j)if(s[i++]!=s[j--])f=0;printf(f?"Yes":"No");}`,
+`#include <stdio.h>
+int main(){for(int i=1;i<=20;i++)printf(i%3==0&&i%5==0?"FizzBuzz\\n":i%3==0?"Fizz\\n":i%5==0?"Buzz\\n":"%d\\n",i);}`,
+`#include <stdio.h>
+int main(){int a[2][2]={{1,2},{3,4}};printf("%d",a[1][0]);}`
+];
 
   const C_HARD = [
 `#include <stdio.h>
