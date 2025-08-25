@@ -79,6 +79,8 @@
     state.event = $('#eventCode').value.trim()||'DEFAULT';
     state.totalRounds = state.mode==='competition'?5: (state.mode==='practice'?1:999);
     $('#postGame').classList.add('hidden');
+    $('#startBtn').style.display = 'none';
+    $('#stopBtn').style.display = '';
     nextRound();
   }
 
@@ -319,6 +321,8 @@ Anti-cheat: Pasting is disabled. Tab switching adds a time penalty. Tab inserts 
   $('#stopBtn').addEventListener('click', () => {
     state.running = false;
     inputArea.disabled = true;
+    $('#startBtn').style.display = '';
+    $('#stopBtn').style.display = 'none';
     toast('Stopped!');
   });
 })();

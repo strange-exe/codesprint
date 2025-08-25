@@ -30,7 +30,7 @@ for x in sorted(nums):
 `def fact(n):
     return 1 if n==0 else n*fact(n-1)`,
 `print({x:x**2 for x in range(4)})`,
-`print(list(map(str.upper, ['a','b'])))`
+`print(list(map(str.upper, ['a','b'])))`,
 `import this`,
 `print('\\n'.join(['FizzBuzz'[(i%3==0)*4:(i%5==0)*4 or 8] or str(i) for i in range(1,21)]))`,
 `def flatten(l): return [item for sublist in l for item in sublist]`,
@@ -88,7 +88,7 @@ console.log(sum([3,1,2]));`,
 `const fact=n=>n<2?1:n*fact(n-1);
 console.log(fact(5));`,
 `console.log([...Array(5)].map((_,i)=>i*i))`,
-`console.log(Object.keys({a:1,b:2}))`
+`console.log(Object.keys({a:1,b:2}))`,
 `console.log([...Array(10)].map((_,i)=>i*i));`,
 `const flatten = arr => arr.reduce((a,b)=>a.concat(b),[]);`,
 `const isPalindrome = s => s === s.split('').reverse().join('');`,
